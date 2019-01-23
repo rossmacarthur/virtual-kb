@@ -130,7 +130,7 @@ def main(text, delay, prime, layout):
         click.echo('Extracted text from clipboard')
 
     click.echo(f'Delaying typing for {delay} seconds...')
-    time.sleep(3)
+    time.sleep(delay)
 
     if prime:
         click.echo(f'Priming keyboard')
