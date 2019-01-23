@@ -22,30 +22,48 @@ KEY_CODES = [
     [0x3b, 0x3a, 0x37, 0x31, 0x37, 0x3d, 0x3e]
 ]
 
-COLEMAK = [
-    ['`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', DELETE],
-    ['\t', 'q', 'w', 'f', 'p', 'g', 'j', 'l', 'u', 'y', ';', '[', ']', '\\'],
-    [DELETE, 'a', 'r', 's', 't', 'd', 'h', 'n', 'e', 'i', 'o', '\'', '\n'],
-    [SHIFT, 'z', 'x', 'c', 'v', 'b', 'k', 'm', ',', '.', '/', SHIFT],
-    [CONTROL, OPTION, COMMAND, ' ', COMMAND, OPTION, CONTROL]
-]
+QWERTY = {
+    'unshifted': [
+        ['`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', DELETE],
+        ['\t', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\\'],
+        [DELETE, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '\n'],
+        [SHIFT, 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', SHIFT],
+        [CONTROL, OPTION, COMMAND, ' ', COMMAND, OPTION, CONTROL]
+    ],
+    'shifted':  [
+        ['~', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', DELETE],
+        ['\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '|'],
+        [DELETE, 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '"', '\n'],
+        [SHIFT, 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', SHIFT],
+        [CONTROL, OPTION, COMMAND, ' ', COMMAND, OPTION, CONTROL]
+    ]
+}
 
-COLEMAK_SHIFTED = [
-    ['~', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', DELETE],
-    ['\t', 'Q', 'W', 'F', 'P', 'G', 'J', 'L', 'U', 'Y', ':', '{', '}', '|'],
-    [DELETE, 'A', 'R', 'S', 'T', 'D', 'H', 'N', 'E', 'I', 'O', '"', '\n'],
-    [SHIFT, 'Z', 'X', 'C', 'V', '', 'K', 'M', '<', '>', '?', SHIFT],
-    [CONTROL, OPTION, COMMAND, ' ', COMMAND, OPTION, CONTROL]
-]
+COLEMAK = {
+    'unshifted': [
+        ['`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', DELETE],
+        ['\t', 'q', 'w', 'f', 'p', 'g', 'j', 'l', 'u', 'y', ';', '[', ']', '\\'],
+        [DELETE, 'a', 'r', 's', 't', 'd', 'h', 'n', 'e', 'i', 'o', '\'', '\n'],
+        [SHIFT, 'z', 'x', 'c', 'v', 'b', 'k', 'm', ',', '.', '/', SHIFT],
+        [CONTROL, OPTION, COMMAND, ' ', COMMAND, OPTION, CONTROL]
+    ],
+    'shifted':  [
+        ['~', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', DELETE],
+        ['\t', 'Q', 'W', 'F', 'P', 'G', 'J', 'L', 'U', 'Y', ':', '{', '}', '|'],
+        [DELETE, 'A', 'R', 'S', 'T', 'D', 'H', 'N', 'E', 'I', 'O', '"', '\n'],
+        [SHIFT, 'Z', 'X', 'C', 'V', 'B', 'K', 'M', '<', '>', '?', SHIFT],
+        [CONTROL, OPTION, COMMAND, ' ', COMMAND, OPTION, CONTROL]
+    ]
+}
 
 
-def char_to_key_code(c):
-    for i, row in enumerate(COLEMAK):
+def char_to_key_code(c, layout=QWERTY):
+    for i, row in enumerate(layout['unshifted']):
         if c in row:
             j = row.index(c)
             return KEY_CODES[i][j], False
 
-    for i, row in enumerate(COLEMAK_SHIFTED):
+    for i, row in enumerate(layout['shifted']):
         if c in row:
             j = row.index(c)
             return KEY_CODES[i][j], True
@@ -53,8 +71,8 @@ def char_to_key_code(c):
     raise ValueError(f'{c} is not supported')
 
 
-def key_press(c):
-    key_code, shift = char_to_key_code(c)
+def key_press(c, layout=QWERTY):
+    key_code, shift = char_to_key_code(c, layout=layout)
     time.sleep(0.0001)
 
     if shift:
@@ -72,10 +90,10 @@ def key_press(c):
         time.sleep(0.0001)
 
 
-def prime_keyboard():
+def prime_keyboard(layout=QWERTY):
     for _ in range(10):
-        key_press('a')
-        key_press(DELETE)
+        key_press('a', layout=layout)
+        key_press(DELETE, layout=layout)
 
 
 @click.command()
@@ -95,7 +113,17 @@ def prime_keyboard():
     default=True,
     help='Prime the keyboard before typing.'
 )
-def main(text, delay, prime):
+@click.option(
+    '--layout',
+    default='qwerty',
+    type=click.Choice(['qwerty', 'colemak']),
+    help='Set the keyboard layout.'
+)
+def main(text, delay, prime, layout):
+    layout = {
+        'qwerty': QWERTY,
+        'colemak': COLEMAK
+    }[layout]
 
     if not text:
         text = pyperclip.paste()
@@ -110,7 +138,7 @@ def main(text, delay, prime):
 
     click.echo('Typing...')
     for char in text:
-        key_press(char)
+        key_press(char, layout=layout)
 
     print('Done!')
 
