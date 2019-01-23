@@ -14,3 +14,7 @@ Run the script with
 ```
 ./kb.py
 ```
+
+## License
+
+This project is licensed under the MIT License.
